@@ -1,52 +1,132 @@
 # Line6 Floorboard ESP32-S3 Wireless MIDI Controller
 
-Transform your Line6 Floorboard into a BLE MIDI foot controller with just an ESP32‑S3 and a few solder joints.
-This firmware also runs on any custom footswitch rig, you just have to provide your own switches and LEDs with proper resistors.
+Turn a Line6 Floorboard into a wireless **BLE MIDI** foot controller using an **ESP32-S3** and a few hardware mods.
+This firmware can also be used on a custom footswitch rig. You just need your own switches, LEDs, expression pedals, and the proper resistors where needed.
+
+## Features
+
+- **Wireless BLE MIDI** controller for Windows
+- **9 footswitch inputs** with matching LED feedback
+- **2 expression pedal inputs** with smoothing and stable MIDI output
+- **Persistent pedal calibration** stored in flash
+- **Runtime calibration mode** triggered directly from the pedalboard
+- **Per-pedal filtering** using calibrated millivolt readings
+- Sends **undefined CC messages**, ideal for MIDI learn in DAWs, amp sims, and plugins
 
 ## Hardware Modifications
 
 ### Step 1: Footswitch Board
 
-1. **Remove resistors** at the highlighted locations and solder wires to the points indicated. These wires become your switch inputs.
+1. **Remove resistors** at the highlighted locations and solder wires to the points indicated. These wires become your switch inputs.  
    ![Footswitch board](hw%20modifications/line6%20board%20switches.jpg)
-2. **Connect each switch wire** to ESP32‑S3 GPIO pins of your choice.
-3. **LEDs**: Use continuity/diode mode on your multimeter between GND and each pin of the on‑board LED connector to identify LED pins. If an LED doesn’t light up, probe between GND and the solder pad on the board side of its resistor (not directly at the LED).
-   *Each LED already has a current‑limiting resistor, so you only need to wire power, GPIO, and GND.*
+2. **Connect each switch wire** to ESP32-S3 GPIO pins of your choice.
+3. **LEDs**: Use continuity / diode mode on your multimeter between GND and each pin of the onboard LED connector to identify LED pins. If an LED doesn’t light up, probe between GND and the solder pad on the board side of its resistor, not directly at the LED.  
+   Each LED already has a current-limiting resistor, so you only need GPIO, power, and GND.
 
 ### Step 2: Expression Pedals & Wah
 
-1. **Solder wires** to the pedal board’s potentiometer output, VCC, and GND. Also tap the onboard connector for the wah‑LED pin.
+1. **Solder wires** to the pedal board’s potentiometer output, VCC, and GND. Also tap the onboard connector for the wah LED pin.  
    ![Expression board](hw%20modifications/expression%20board%20front.png)
-2. **Connect** all pedal wires to the ESP32‑S3’s pins.
+2. **Connect** all pedal wires to the ESP32-S3 pins used by the sketch.
 
-The completed board should look something like this. You can found other closeups in the "hw modfications" folder.
+The completed board should look something like this. More closeups are available in the `hw modifications` folder.  
 ![](hw%20modifications/1747751318078.jpg)
 
 ## Software Setup
 
-1. **Arduino IDE**: Install and select the ESP32‑S3 board.
-2. **BLE‑MIDI Library**: Copy the included, NimBLE‑compatible library into your Arduino `libraries/` folder.
-3. **loopMIDI**: Download and create a virtual MIDI port: [https://www.tobias-erichsen.de/software/loopmidi.html](https://www.tobias-erichsen.de/software/loopmidi.html)
-4. **BLE‑MIDI Connect**: Install from Microsoft Store (free unlimited version; paid supports dev): [https://apps.microsoft.com/detail/9NVMLZTTWWVL?hl=neutral\&gl=IT](https://apps.microsoft.com/detail/9NVMLZTTWWVL?hl=neutral&gl=IT)
+1. Install **Arduino IDE** and the **ESP32 board package**.
+2. Select **ESP32S3 Dev Module**.
+3. Copy the included **NimBLE-compatible BLE MIDI library** into your Arduino `libraries/` folder.
+4. Install **BLE-MIDI Connect** from the Microsoft Store:  
+   [https://apps.microsoft.com/detail/9NVMLZTTWWVL](https://apps.microsoft.com/detail/9NVMLZTTWWVL)
+5. Install **Windows MIDI Services**:  
+   [https://microsoft.github.io/MIDI/](https://microsoft.github.io/MIDI/)
 
-## Firmware & Calibration
+### Notes for Windows
 
-* Upload `HACKEDLine6Floorboard.ino` to the board.
-* Sends **undefined CC messages** (perfect for MIDI‑learn).
-* Pedal heel = min, tip = max; invert indices in smoothing if desired.
+Recent versions of **BLE-MIDI Connect** make **loopMIDI unnecessary for this project**, so it is no longer part of the recommended setup.
+Windows MIDI Services is required for the current Windows workflow and also provides newer MIDI infrastructure, tools, loopbacks, and diagnostics.
 
-### Calibration
+## Firmware
 
-1. In `HACKEDLine6Floorboard.ino`, enable `CALIBRATION_MODE`.
-2. Set `analogRead(VOLUME_PEDAL_PIN)` for the pedal you’re calibrating.
-3. Power on with pedal at heel; note printed value.
-4. Restart with toe position; note value.
-5. Enter those min/max into the boundary definitions and disable `CALIBRATION_MODE`.
+Upload `HACKEDLine6Floorboard.ino` to the board.
+
+### What the firmware does
+
+- Sends **CC 102 to 110** for the 9 footswitches
+- Sends:
+  - **CC 1** for the wah / modulation pedal
+  - **CC 7** for the volume pedal
+- Uses **`analogReadMilliVolts()`** with explicit ADC configuration
+- Filters pedal input with:
+  - oversampling
+  - trimmed averaging
+  - moving average smoothing
+- Stores calibration values in non-volatile flash so they survive reboot and power loss
+
+## Calibration
+
+Calibration is built into the firmware and no manual code editing is needed. To enter calibration mode, Hold **TUNER + CHANNEL SEL** together:
+
+- **during boot**, or
+- **while the unit is already running**
+
+After holding the combo for about 1.5 seconds, calibration mode starts. The calibration procedure is the following: 
+
+1. Move both pedals to **one end-stop**
+2. Press **TUNER** to capture the first point
+3. Move both pedals to the **opposite end-stop**
+4. Press **CHANNEL SEL** to capture the second point
+5. The firmware saves the values automatically
+
+During calibration, the **WAH LED blinks the whole time**, the **TUNER LED blinks for the first checkpoint**, the **CHANNEL SEL LED blinks for the second checkpoint**, and **all LEDs blink at the end** to confirm completion. Calibration is performed in **millivolts** instead of hardcoded raw ADC values, which gives much more consistent pedal behavior and avoids range differences between reboots.
 
 ## Usage
 
-1. Pair the board in BLE‑MIDI Connect (enable “Show all devices”).
-2. In loopMIDI, select your new port as the output.
-3. Open your DAW, choose the loopMIDI port as MIDI input. That's all.
+1. Power on the controller
+2. Open **BLE-MIDI Connect**
+3. Connect to `Line6Floorboard`
+4. In your DAW or plugin host, select the BLE MIDI endpoint as input
+5. Use MIDI learn to assign the switches and pedals
+
+That’s it.
 ![](hw%20modifications/Immagine%202025-05-20%20163453.png)
 
+## Board Configuration and Pin Notes
+
+Use **`ESP32S3 Dev Module`** and make sure the Arduino IDE settings match the actual module variant printed on your board. For example, an **N16R8** module has **16 MB flash** and **8 MB PSRAM**, so a good starting point is:
+
+- **Flash Size:** `16MB`
+- **Partition Scheme:** one of the **16M Flash** layouts
+- **PSRAM:** enabled, matching the module’s PSRAM configuration
+- **CPU Frequency:** `240MHz`
+
+If PSRAM causes instability, check your wiring and pin assignments before disabling it. Also, always verify **reserved pins** in the datasheet and board documentation before wiring anything, especially on ESP32-S3 boards with flash and PSRAM, because some GPIOs may be used internally and must not be reused. On some ESP32-S3 WROOM variants, for example, **GPIO35, GPIO36, and GPIO37** may be reserved, and using them can cause crashes, watchdog resets, boot failures, or strange BLE/ADC behavior. More generally, do not assume every exposed header pin is safe: check whether a pin is used for **flash, PSRAM, USB, boot strapping, or other special functions**. Calibration values are stored in flash, so they survive reboots and power cycles.
+
+
+## Changelog
+
+### Latest
+
+- Added **proper pedal calibration** directly in firmware
+- Added **persistent storage** for calibration data using flash preferences
+- Switched pedal reading to **`analogReadMilliVolts()`**
+- Added **explicit ADC setup**
+- Refactored pedal handling into dedicated per-pedal logic
+- Improved pedal stability with **oversampling + trimmed mean + moving average**
+- Added **runtime calibration trigger**
+- Added **calibration LED guidance**:
+  - WAH blinks during calibration
+  - TUNER blinks for the first capture
+  - CHANNEL SEL blinks for the second capture
+  - all LEDs blink when calibration finishes
+- Updated Windows setup:
+  - **loopMIDI is no longer required**
+  - **Windows MIDI Services is now part of the recommended setup**
+
+## Credits
+
+- BLE MIDI transport for ESP32-S3
+- Original Line6 Floorboard hardware reuse
+- BLE-MIDI Connect by locomorange
+- Windows MIDI Services by Microsoft
