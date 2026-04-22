@@ -106,6 +106,14 @@ bool calibrationComboHeld() {   // True while TUNER and CHANNEL SEL are both phy
   return buttonHeld(BTN_TUNER) && buttonHeld(BTN_CHANNEL_SEL);
 }
 
+void setButtonState(uint8_t index, bool on) {   // Updates the saved footswitch state that drives LEDs and outgoing CC values.
+  if (on) {
+    buttonStateMask |= ledMask(index);
+  } else {
+    buttonStateMask &= ~ledMask(index);
+  }
+}
+
 // LED rendering
 void renderLeds(uint16_t steadyMask, uint16_t blinkMask = 0, uint16_t blinkMs = 0) {   // Draws all LEDs from steady/blinking bitmasks.
   bool blinkOn = blinkMs > 0 && ((millis() / blinkMs) % 2) == 0;
@@ -133,6 +141,18 @@ void flashAllButtonLeds(uint8_t times, uint16_t ms) {   // Brief completion/star
     renderLeds(0);
     delay(ms);
   }
+}
+
+void handleIncomingControlChange(uint8_t channel, uint8_t controller, uint8_t value, uint16_t timestamp) {
+  (void)timestamp;
+
+  // Mirror the existing outgoing mapping: MIDI_CHANNEL, CC 102..110, value 0=OFF and >0=ON.
+  if (channel != MIDI_CHANNEL || controller < BUTTON_CC_BASE || controller >= BUTTON_CC_BASE + BUTTON_NUM) {
+    return;
+  }
+
+  setButtonState(controller - BUTTON_CC_BASE, value > 0);
+  renderRuntimeLeds();
 }
 
 // ADC reading
@@ -444,6 +464,8 @@ void initBleMidi() {
     renderRuntimeLeds();
   });
 
+  BLEMidiServer.setControlChangeCallback(handleIncomingControlChange);
+
   Serial.println("BLE MIDI Advertising started");
 }
 
@@ -454,7 +476,7 @@ void handleButtonActions() {
       continue;
     }
 
-    buttonStateMask ^= ledMask(i);
+    setButtonState(i, !(buttonStateMask & ledMask(i)));
     renderRuntimeLeds();
 
     if (isConnected) {
