@@ -18,7 +18,7 @@ This firmware can also be used on a custom footswitch rig. You just need your ow
 ### Step 1: Footswitch Board
 
 1. **Remove resistors** at the highlighted locations and solder wires to the points indicated. These wires become your switch inputs.  
-   ![Footswitch board](hw%20modifications/line6%20board%20switches.jpg)
+   ![Footswitch board](pics/line6_board_switches.jpg)
 2. **Connect each switch wire** to ESP32-S3 GPIO pins of your choice.
 3. **LEDs**: Use continuity / diode mode on your multimeter between GND and each pin of the onboard LED connector to identify LED pins. If an LED doesn’t light up, probe between GND and the solder pad on the board side of its resistor, not directly at the LED.  
    Each LED already has a current-limiting resistor, so you only need GPIO, power, and GND.
@@ -26,11 +26,11 @@ This firmware can also be used on a custom footswitch rig. You just need your ow
 ### Step 2: Expression Pedals & Wah
 
 1. **Solder wires** to the pedal board’s potentiometer output, VCC, and GND. Also tap the onboard connector for the wah LED pin.  
-   ![Expression board](hw%20modifications/expression%20board%20front.png)
+   ![Expression board](pics/line6_board_pedals.jpg)
 2. **Connect** all pedal wires to the ESP32-S3 pins used by the sketch.
 
 The completed board should look something like this. More closeups are available in the `hw modifications` folder.  
-![](hw%20modifications/1747751318078.jpg)
+![](pics/view_1.jpg)
 
 ## Software Setup
 
@@ -68,14 +68,7 @@ Upload `HACKEDLine6Floorboard.ino` to the board.
 
 ## Calibration
 
-Calibration is built into the firmware and no manual code editing is needed. To enter calibration mode, hold **TUNER + CHANNEL SEL** together:
-
-- **during boot**, or
-- **while the unit is already running**
-
-After holding the combo for about 1.5 seconds, calibration mode starts.
-
-The calibration procedure is the following:
+Calibration is built into the firmware and no manual code editing is needed. The calibration mode can be entered holding **TUNER + CHANNEL SEL** together, both during booth or while the unit is already running. After holding the combo for about 1.5 seconds, calibration mode starts. The calibration procedure is the following:
 
 1. Move both pedals to **one end-stop**
 2. Press **TUNER** to capture the first point
@@ -94,7 +87,7 @@ During calibration, the **WAH LED blinks the whole time**, the **TUNER LED blink
 5. Use MIDI learn to assign the switches and pedals
 
 That’s it.  
-![](hw%20modifications/Immagine%202025-05-20%20163453.png)
+![](pics/midi-ble-screenshot.png)
 
 ## Board Configuration and Pin Notes
 
