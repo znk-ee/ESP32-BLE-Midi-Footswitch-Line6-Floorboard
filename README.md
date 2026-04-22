@@ -1,6 +1,6 @@
 # Line6 Floorboard ESP32-S3 Wireless MIDI Controller
 
-Turn a Line6 Floorboard into a wireless **BLE MIDI** foot controller using an **ESP32-S3** and a few hardware mods.
+Turn a Line6 Floorboard into a wireless **BLE MIDI** foot controller using an **ESP32-S3** and a few hardware mods.  
 This firmware can also be used on a custom footswitch rig. You just need your own switches, LEDs, expression pedals, and the proper resistors where needed.
 
 ## Features
@@ -36,7 +36,9 @@ The completed board should look something like this. More closeups are available
 
 1. Install **Arduino IDE** and the **ESP32 board package**.
 2. Select **ESP32S3 Dev Module**.
-3. Copy the included **NimBLE-compatible BLE MIDI library** into your Arduino `libraries/` folder.
+3. Install the updated BLE MIDI library for this project:  
+   **[ESP32-BLE-MIDI-NimBLE2](https://github.com/znk-ee/ESP32-BLE-MIDI-NimBLE2)**  
+   This is an updated fork of the original ESP32 BLE MIDI library, made compatible with **NimBLE-Arduino 2.x** while preserving the original API style and usage.
 4. Install **BLE-MIDI Connect** from the Microsoft Store:  
    [https://apps.microsoft.com/detail/9NVMLZTTWWVL](https://apps.microsoft.com/detail/9NVMLZTTWWVL)
 5. Install **Windows MIDI Services**:  
@@ -44,7 +46,7 @@ The completed board should look something like this. More closeups are available
 
 ### Notes for Windows
 
-Recent versions of **BLE-MIDI Connect** make **loopMIDI unnecessary for this project**, so it is no longer part of the recommended setup.
+Recent versions of **BLE-MIDI Connect** make **loopMIDI unnecessary for this project**, so it is no longer part of the recommended setup.  
 Windows MIDI Services is required for the current Windows workflow and also provides newer MIDI infrastructure, tools, loopbacks, and diagnostics.
 
 ## Firmware
@@ -66,12 +68,14 @@ Upload `HACKEDLine6Floorboard.ino` to the board.
 
 ## Calibration
 
-Calibration is built into the firmware and no manual code editing is needed. To enter calibration mode, Hold **TUNER + CHANNEL SEL** together:
+Calibration is built into the firmware and no manual code editing is needed. To enter calibration mode, hold **TUNER + CHANNEL SEL** together:
 
 - **during boot**, or
 - **while the unit is already running**
 
-After holding the combo for about 1.5 seconds, calibration mode starts. The calibration procedure is the following: 
+After holding the combo for about 1.5 seconds, calibration mode starts.
+
+The calibration procedure is the following:
 
 1. Move both pedals to **one end-stop**
 2. Press **TUNER** to capture the first point
@@ -89,7 +93,7 @@ During calibration, the **WAH LED blinks the whole time**, the **TUNER LED blink
 4. In your DAW or plugin host, select the BLE MIDI endpoint as input
 5. Use MIDI learn to assign the switches and pedals
 
-That’s it.
+That’s it.  
 ![](hw%20modifications/Immagine%202025-05-20%20163453.png)
 
 ## Board Configuration and Pin Notes
@@ -102,7 +106,6 @@ Use **`ESP32S3 Dev Module`** and make sure the Arduino IDE settings match the ac
 - **CPU Frequency:** `240MHz`
 
 If PSRAM causes instability, check your wiring and pin assignments before disabling it. Also, always verify **reserved pins** in the datasheet and board documentation before wiring anything, especially on ESP32-S3 boards with flash and PSRAM, because some GPIOs may be used internally and must not be reused. On some ESP32-S3 WROOM variants, for example, **GPIO35, GPIO36, and GPIO37** may be reserved, and using them can cause crashes, watchdog resets, boot failures, or strange BLE/ADC behavior. More generally, do not assume every exposed header pin is safe: check whether a pin is used for **flash, PSRAM, USB, boot strapping, or other special functions**. Calibration values are stored in flash, so they survive reboots and power cycles.
-
 
 ## Changelog
 
@@ -123,6 +126,7 @@ If PSRAM causes instability, check your wiring and pin assignments before disabl
 - Updated Windows setup:
   - **loopMIDI is no longer required**
   - **Windows MIDI Services is now part of the recommended setup**
+- Updated the recommended BLE MIDI library to **ESP32-BLE-MIDI-NimBLE2** for compatibility with current **NimBLE-Arduino 2.x** releases
 
 ## Credits
 
@@ -130,3 +134,4 @@ If PSRAM causes instability, check your wiring and pin assignments before disabl
 - Original Line6 Floorboard hardware reuse
 - BLE-MIDI Connect by locomorange
 - Windows MIDI Services by Microsoft
+- **ESP32-BLE-MIDI-NimBLE2** compatibility fork for newer NimBLE versions
