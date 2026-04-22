@@ -17,9 +17,9 @@ This firmware can also be used on a custom footswitch rig. You just need your ow
 
 ### Step 1: Footswitch Board
 
-1. **Remove resistors** at the highlighted locations and solder wires to the points indicated. These wires become your switch inputs.  
+1. **Remove resistors** at the highlighted locations (in the central part of the board) and solder wires to the points indicated. These wires become your switch inputs. Pads with the same SW number are already shorted together, so you can use whichever one is most convenient.
    ![Footswitch board](pics/line6_board_switches.jpg)
-2. **Connect each switch wire** to ESP32-S3 GPIO pins of your choice.
+2. **Connect each switch wire** to ESP32-S3 GPIO pins of your choice. Be sure to read the **Pin Notes** section at the end before wiring them.
 3. **LEDs**: Use continuity / diode mode on your multimeter between GND and each pin of the onboard LED connector to identify LED pins. If an LED doesn’t light up, probe between GND and the solder pad on the board side of its resistor, not directly at the LED.  
    Each LED already has a current-limiting resistor, so you only need GPIO, power, and GND.
 
