@@ -66,6 +66,8 @@ Tested setup in **Studio One Pro 8**:
 
 After that, when the DAW function changes state, Studio One sends the matching CC value back to the pedalboard and the corresponding LED updates.
 
+![Daw screenshot](pics/daw-screenshot.png)
+
 Other DAWs may use different names for the same feature, such as MIDI feedback, send value, transmit value, output to controller, or controller feedback.
 
 ## Hardware Modifications
@@ -92,7 +94,7 @@ The onboard LEDs already have current-limiting resistors, so the ESP32 only need
 
 The completed board should look similar to this. More closeups are available in the `hw modifications` folder.
 
-![](pics/view_1.jpg)
+![General view](pics/view_1.jpg)
 
 ## Software Setup
 
@@ -137,7 +139,7 @@ Always verify ESP32-S3 reserved pins before wiring. Some GPIOs may be used inter
 5. Use MIDI Learn to assign footswitches and pedals.
 6. For LED feedback from the DAW, enable the DAW/software option that transmits mapped control values back to the pedalboard.
 
-![](pics/midi-ble-screenshot.png)
+![MIDI-BLE screenshot](pics/midi-ble-screenshot.png)
 
 ## Pedal Calibration
 
